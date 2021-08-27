@@ -1,9 +1,9 @@
-import MUIDataTable, { ExpandButton, MUIDataTableCheckboxProps, MUIDataTableColumn, MUIDataTableOptions, MUIDataTableProps, MUIDataTableState } from 'mui-datatables';
+import MUIDataTable, { ExpandButton, MUIDataTableCheckboxProps, MUIDataTableColumn, MUIDataTableOptions, MUIDataTableProps, MUIDataTableState, Popover } from 'mui-datatables';
 import * as React from 'react';
 import { createMuiTheme, Checkbox, Radio } from '@material-ui/core';
 
 interface Props extends Omit<MUIDataTableProps, 'columns'> {
-    columns?: MUIDataTableColumn[];
+    columns?: MUIDataTableColumn[] | undefined;
 }
 
 const MuiCustomTable: React.FC<Props> = props => {
@@ -259,3 +259,5 @@ const MuiTheme = createMuiTheme({
         }
     }
 });
+
+<Popover classes={{ icon: 'icon_class' }} content={<span>content</span>} trigger={<button>trigger</button>} refExit={() => {}} />;

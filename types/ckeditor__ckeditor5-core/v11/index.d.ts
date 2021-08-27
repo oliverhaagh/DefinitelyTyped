@@ -2,7 +2,7 @@
 // Project: https://github.com/ckeditor/ckeditor5-core, https://ckeditor.com/ckeditor-5
 // Definitions by: denisname <https://github.com/denisname>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
-// TypeScript Version: 4.2
+// Minimum TypeScript Version: 4.3
 
 import { Conversion, DataController, EditingController, Model } from "@ckeditor/ckeditor5-engine";
 import { KeyEventData } from "@ckeditor/ckeditor5-engine/src/view/observer/keyobserver";
@@ -90,7 +90,7 @@ export namespace editor {
             emitter: Emitter,
             event: string,
             callback: Function,
-            options?: { priority?: PriorityString | number },
+            options?: { priority?: PriorityString | number | undefined },
         ): void;
         off(event: string, callback?: Function): void;
         on(event: string, callback: Function, options?: { priority: PriorityString | number }): void;
@@ -147,7 +147,7 @@ export namespace editor {
             emitter: Emitter,
             event: string,
             callback: Function,
-            options?: { priority?: PriorityString | number },
+            options?: { priority?: PriorityString | number | undefined },
         ): void;
         off(event: string, callback?: Function): void;
         on(event: string, callback: Function, options?: { priority: PriorityString | number }): void;
@@ -183,7 +183,7 @@ export class Command<T = undefined> implements Emitter, Observable {
         emitter: Emitter,
         event: string,
         callback: Function,
-        options?: { priority?: PriorityString | number },
+        options?: { priority?: PriorityString | number | undefined },
     ): void;
     off(event: string, callback?: Function): void;
     on(event: string, callback: Function, options?: { priority: PriorityString | number }): void;
@@ -243,8 +243,8 @@ export class PendingActions extends Plugin {
 export abstract class Plugin<T = void> implements Emitter, Observable {
     readonly editor: editor.Editor;
 
-    static readonly pluginName?: string;
-    static readonly requires?: Array<new (editor: editor.Editor) => Plugin>;
+    static readonly pluginName?: string | undefined;
+    static readonly requires?: Array<new (editor: editor.Editor) => Plugin> | undefined;
 
     constructor(editor: editor.Editor);
     afterInit?(): null | Promise<T>;
@@ -258,7 +258,7 @@ export abstract class Plugin<T = void> implements Emitter, Observable {
         emitter: Emitter,
         event: string,
         callback: Function,
-        options?: { priority?: PriorityString | number },
+        options?: { priority?: PriorityString | number | undefined },
     ): void;
     off(event: string, callback?: Function): void;
     on(event: string, callback: Function, options?: { priority: PriorityString | number }): void;
