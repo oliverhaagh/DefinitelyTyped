@@ -1,8 +1,28 @@
-import { extendDefaultPlugins, loadConfig, optimize, OptimizedSvg, OptimizeOptions, Plugin } from 'svgo';
+import {
+    extendDefaultPlugins,
+    loadConfig,
+    optimize,
+    OptimizedError,
+    OptimizedSvg,
+    OptimizeOptions,
+    SvgoParserError,
+    Plugin,
+} from 'svgo';
 
 // Various optimize options
-let optimized: OptimizedSvg;
+const rawInput = Buffer.from('test');
+let optimized: OptimizedSvg | OptimizedError;
 optimized = optimize('');
+
+if (optimized.modernError) {
+    optimized; // $ExpectType OptimizedError
+    optimized.modernError; // $ExpectType SvgoParserError
+} else {
+    optimized; // $ExpectType OptimizedSvg
+    optimized.data; // $ExpectType string
+}
+
+optimized = optimize(rawInput);
 optimized = optimize('', {});
 optimized = optimize('', { plugins: [] });
 optimized = optimize('', { datauri: 'base64' });
@@ -199,7 +219,8 @@ optimized = optimize('', {
         { name: 'moveGroupAttrsToElems' },
         { name: 'prefixIds', params: { delim: '__', prefixIds: true, prefixClassNames: true } },
         { name: 'removeAttributesBySelector' },
-        { name: 'removeAttrs', params: { elemSeparator: ':', preserveCurrentColor: false, attrs: [] } },
+        { name: 'removeAttrs', params: { elemSeparator: ':', preserveCurrentColor: false, attrs: 'fill' } },
+        { name: 'removeAttrs', params: { elemSeparator: ':', preserveCurrentColor: false, attrs: ['fill', 'stroke'] } },
         { name: 'removeComments' },
         { name: 'removeDesc', params: { removeAny: true } },
         { name: 'removeDimensions' },
@@ -338,7 +359,7 @@ optimized = optimize('', {
                         prefix: '',
                         preserve: [],
                         preservePrefixes: [],
-                        force: false
+                        force: false,
                     },
                     cleanupNumericValues: { floatPrecision: 3, leadingZero: true, defaultPx: true, convertToPx: true },
                     convertColors: {
@@ -346,7 +367,7 @@ optimized = optimize('', {
                         names2hex: true,
                         rgb2hex: true,
                         shorthex: true,
-                        shortname: true
+                        shortname: true,
                     },
                     convertPathData: {
                         applyTransforms: true,
@@ -383,7 +404,7 @@ optimized = optimize('', {
                         onlyMatchedOnce: true,
                         removeMatchedSelectors: true,
                         useMqs: ['', 'screen'],
-                        usePseudos: ['']
+                        usePseudos: [''],
                     },
                     mergePaths: {
                         collapseRepeated: true,
@@ -443,6 +464,8 @@ const options: OptimizeOptions = {
     js2svg: {
         indent: 2,
         pretty: true,
+        eol: 'crlf',
+        finalNewline: true,
     },
     svg2js: {
         trim: true,
@@ -458,3 +481,12 @@ optimize('', { plugins: extendDefaultPlugins(plugins) });
 loadConfig('foo.js');
 // $ExpectType Promise<OptimizeOptions>
 loadConfig('foo.js', '/home/user');
+
+(async () => {
+    const config = await loadConfig();
+    if (!config) {
+        config; // $ExpectType null
+        return;
+    }
+    config; // $ExpectType OptimizeOptions
+})();

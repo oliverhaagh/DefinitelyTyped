@@ -22,6 +22,14 @@ DateTime.DATETIME_MED_WITH_WEEKDAY; // $ExpectType DateTimeFormatOptions
 DateTime.DATE_MED; // $ExpectType DateTimeFormatOptions
 DateTime.DATE_MED_WITH_WEEKDAY; // $ExpectType DateTimeFormatOptions
 
+DateTime.local({ zone: 'Atlantic/Azores' }); // $ExpectType DateTime
+DateTime.local(2021, 8, 28, { zone: 'Atlantic/Azores' }); // $ExpectType DateTime
+DateTime.utc(); // $ExpectType DateTime
+DateTime.utc({ locale: 'en-US' }); // $ExpectType DateTime
+DateTime.utc(2018, 5, 31, 23, { numberingSystem: 'arabext' }); // $ExpectType DateTime
+DateTime.utc(2019, { locale: 'en-GB' }, 5); // $ExpectError
+DateTime.isDateTime(0 as unknown); // $ExpectType boolean
+
 const dt = DateTime.local(2017, 5, 15, 8, 30);
 
 const now = DateTime.now();
@@ -74,16 +82,19 @@ const fromIso2 = DateTime.fromISO('2017-05-15T08:30:00'); // => May 15, 2017 at 
 DateTime.local().toString(); // => '2017-09-14T03:20:34.091-04:00'
 
 const getters = DateTime.local();
-getters.year;
-getters.month;
-getters.day;
-getters.second;
-getters.weekday;
-getters.zoneName;
-getters.offset;
-getters.daysInMonth;
-getters.ordinal;
-getters.isInLeapYear;
+getters.year; // $ExpectType number
+getters.month; // $ExpectType MonthNumbers
+getters.day; // $ExpectType DayNumbers
+getters.minute; // $ExpectType SecondNumbers
+getters.second; // $ExpectType SecondNumbers
+getters.weekday; // $ExpectType WeekdayNumbers
+getters.zoneName; // $ExpectType string
+getters.offset; // $ExpectType number
+getters.daysInMonth; // $ExpectType PossibleDaysInMonth
+getters.daysInYear; // $ExpectType PossibleDaysInYear
+getters.weeksInWeekYear; // $ExpectType PossibleWeeksInYear
+getters.ordinal; // $ExpectType number
+getters.isInLeapYear; // $ExpectType boolean
 
 dt.toBSON(); // $ExpectType Date
 dt.toHTTP(); // $ExpectType string
@@ -96,6 +107,9 @@ dt.toISOTime({ format: 'basic' }); // $ExpectType string
 dt.toISOWeekDate(); // $ExpectType string
 dt.toJSDate(); // $ExpectType Date
 dt.toJSON(); // $ExpectType string
+dt.toLocaleParts(); // $ExpectType DateTimeFormatPart[]
+dt.toLocaleParts()[0].type; // $ExpectType DateTimeFormatPartTypes
+dt.toLocaleParts()[0].value; // $ExpectType string
 dt.toLocaleString(); // $ExpectType string
 dt.toLocaleString({ month: 'long', day: 'numeric' }); // $ExpectType string
 dt.toLocaleString(DateTime.DATE_MED); // $ExpectType string
@@ -157,7 +171,7 @@ dt.offsetNameLong; // $ExpectType string
 dt.isOffsetFixed; // $ExpectType boolean
 dt.isInDST; // $ExpectType boolean
 
-dt.set({ hour: 3 }).hour; // $ExpectType number
+dt.set({ hour: 3 }).hour; // $ExpectType HourNumbers
 
 const f: { month: 'long'; day: 'numeric' } = { month: 'long', day: 'numeric' };
 dt.setLocale('fr').toLocaleString(f);
@@ -183,14 +197,20 @@ const { input, result, zone } = DateTime.fromFormatExplain('Aug 6 1982', 'MMMM d
 
 /* Duration */
 const dur = Duration.fromObject({ hours: 2, minutes: 7 }); // $ExpectType Duration
+Duration.fromObject({ hour: 2, minute: 7 }); // $ExpectType Duration
 Duration.fromObject({ locale: 'ru' }); // $ExpectError
 Duration.fromObject({ conversionAccuracy: 'casual' }); // $ExpectError
 Duration.fromObject({}, { conversionAccuracy: 'casual' }); // $ExpectType Duration
+Duration.fromDurationLike({ hours: 1 }); // $ExpectType Duration
+Duration.fromDurationLike(1000); // $ExpectType Duration
+Duration.fromDurationLike(dur); // $ExpectType Duration
+Duration.fromDurationLike(''); // $ExpectError
 dt.plus(dur); // $ExpectType DateTime
 dt.plus({ quarters: 2, months: 1 }); // $ExpectType DateTime
 dur.hours; // $ExpectType number
 dur.minutes; // $ExpectType number
 dur.seconds; // $ExpectType number
+dur.set({ hour: 2, minutes: 15 }); // $ExpectType Duration
 
 dur.as('seconds'); // $ExpectType number
 dur.toObject();
@@ -205,6 +225,7 @@ if (Duration.isDuration(anything)) {
 }
 Duration.invalid(); // $ExpectError
 Duration.invalid('code', 'because I said so'); // $ExpectType Duration
+Duration.isDuration(0 as unknown); // $ExpectType boolean
 
 /* Interval */
 const later = DateTime.local();
@@ -230,6 +251,7 @@ if (Interval.isInterval(anything)) {
 }
 Interval.invalid(); // $ExpectError
 Interval.invalid('code', 'because I said so'); // $ExpectType Interval
+Interval.isInterval(0 as unknown); // $ExpectType boolean
 
 /* Info */
 Info.months();
@@ -267,7 +289,7 @@ Settings.defaultLocale = 'fr';
 DateTime.local().locale; // $ExpectType string
 
 Settings.defaultLocale = DateTime.local().resolvedLocaleOptions().locale;
-DateTime.local().resolvedLocaleOptions({ locale: 'de' });
+DateTime.local().resolvedLocaleOptions({ locale: 'de' }); // $ExpectType Required<LocaleOptions>
 
 dt.setLocale('fr').toLocaleString(DateTime.DATE_FULL); // $ExpectType string
 dt.toLocaleString({ ...DateTime.DATE_FULL }, { locale: 'es' }); // $ExpectType string
@@ -310,6 +332,7 @@ DateTime.fromISO('2017-W23-3').plus({ weeks: 1, days: 2 }).toISOWeekDate(); // $
 
 const dtHebrew = DateTime.local().reconfigure({ outputCalendar: 'hebrew' });
 dtHebrew.outputCalendar; // $ExpectType string
+dtHebrew.numberingSystem; // $ExpectType string
 dtHebrew.toLocaleString(); // $ExpectType string
 
 DateTime.fromObject({}, { outputCalendar: 'buddhist' }).toLocaleString(DateTime.DATE_FULL);
@@ -319,14 +342,23 @@ Settings.defaultOutputCalendar = 'persian';
 DateTime.fromISO('2014-08-06T13:07:04.054').toFormat('yyyy LLL dd'); // $ExpectType string
 
 /* Parsing */
+DateTime.fromObject(); // $ExpectError
 DateTime.fromObject({}, { zone: 'America/Los_Angeles' }); // $ExpectType DateTime
+DateTime.fromISO(); // $ExpectError
 DateTime.fromISO('2016-05-25'); // $ExpectType DateTime
+DateTime.fromJSDate(); // $ExpectError
 DateTime.fromJSDate(new Date()); // $ExpectType DateTime
+DateTime.fromRFC2822(); // $ExpectError
 DateTime.fromRFC2822('Tue, 01 Nov 2016 13:23:12 +0630'); // $ExpectType DateTime
+DateTime.fromHTTP(); // $ExpectError
 DateTime.fromHTTP('Sunday, 06-Nov-94 08:49:37 GMT'); // $ExpectType DateTime
+DateTime.fromSQL(); // $ExpectError
 DateTime.fromSQL('2017-05-15 09:24:15'); // $ExpectType DateTime
+DateTime.fromMillis(); // $ExpectError
 DateTime.fromMillis(1542674993410); // $ExpectType DateTime
+DateTime.fromSeconds(); // $ExpectError
 DateTime.fromSeconds(1542674993); // $ExpectType DateTime
+DateTime.fromFormat(); // $ExpectError
 DateTime.fromFormat('May 25 1982', 'LLLL dd yyyy'); // $ExpectType DateTime
 DateTime.fromFormat('mai 25 1982', 'LLLL dd yyyy', { locale: 'fr' }); // $ExpectType DateTime
 
@@ -347,6 +379,7 @@ d1.hasSame(d2, 'minute'); // $ExpectType boolean
 d1.hasSame(d2, 'year'); // $ExpectType boolean
 
 dur.toObject().days; // $ExpectType number | undefined
+dur.toObject().day; // $ExpectError
 dur.as('minutes'); // $ExpectType number
 dur.shiftTo('minutes').toObject().minutes; // $ExpectType number | undefined
 // prettier-ignore
@@ -369,6 +402,7 @@ dur.shiftTo('weeks', 'hours').toObject().weeks; // $ExpectType number | undefine
 DateTime.local().plus(dur.shiftTo('milliseconds')).year; // $ExpectType number
 
 Duration.fromISO('PY23', { conversionAccuracy: 'longterm' }); // $ExpectType Duration
+Duration.fromISOTime('21:37.000'); // $ExpectType Duration
 Duration.fromISOTime('21:37.000', { conversionAccuracy: 'longterm' }); // $ExpectType Duration
 
 end.diff(start, 'hours', { conversionAccuracy: 'longterm' }); // $ExpectType Duration
@@ -393,3 +427,15 @@ class SampleZone extends Zone {
         return 0;
     }
 }
+
+DateTime.fromISO('2021-09-13T07:52:27.697Z').toLocaleString({
+    ...DateTime.DATETIME_FULL_WITH_SECONDS,
+    hour: '2-digit',
+    second: '2-digit',
+});
+
+DateTime.fromISO('2021-09-13T07:52:27.697Z').toLocaleString({
+    ...DateTime.DATETIME_MED,
+    hour: '2-digit',
+    day: '2-digit',
+});
